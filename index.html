@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🕺 몸으로 말해요</title>
+    <style>
+        :root { --primary: #6c5ce7; --bg: #f0f3f7; }
+        body { font-family: 'Pretendard', sans-serif; background-color: var(--bg); display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .card { background: white; width: 90%; max-width: 450px; padding: 40px 20px; border-radius: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); text-align: center; }
+        h1 { font-size: 1.5rem; color: #2d3436; margin-bottom: 30px; }
+        select { width: 100%; padding: 12px; border: 2px solid #dfe6e9; border-radius: 15px; font-size: 1rem; outline: none; margin-bottom: 20px; cursor: pointer; }
+        #display-area { height: 180px; display: flex; align-items: center; justify-content: center; margin: 20px 0; background: #f9f9f9; border-radius: 20px; border: 2px dashed #eee; overflow: hidden; }
+        #word { font-size: 3rem; font-weight: 900; color: var(--primary); word-break: keep-all; transition: 0.2s; }
+        .btn { background: var(--primary); color: white; border: none; width: 100%; padding: 18px; font-size: 1.3rem; font-weight: bold; border-radius: 15px; cursor: pointer; box-shadow: 0 8px 0 #5849be; }
+        .btn:active { transform: translateY(4px); box-shadow: 0 4px 0 #5849be; }
+        .info { font-size: 0.8rem; color: #a4b0be; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h1>🕺 몸으로 말해요</h1>
+
+    <select id="category-select" onchange="resetGame()">
+        <option value="cat1">🍕 음식</option>
+        <option value="cat2">😆 게임</option>
+        <option value="cat3">🏃 액션/동작</option>
+        <option value="cat4">⚽ 운동</option>
+        <option value="cat5">🦁 동물</option>
+        <option value="cat6">👨‍💼 직업</option>
+        <option value="cat7">🎤 아이돌</option>
+        <option value="cat8">📱 어플리케이션</option>
+        <option value="cat9">🎭 감정</option>
+        <option value="cat10">🏙 장소</option>
+    </select>
+
+    <div id="display-area">
+        <div id="word">준비!</div>
+    </div>
+
+    <button class="btn" onclick="nextWord()">다음 문제</button>
+    <p class="info" id="status-text">버튼을 눌러 시작하세요!</p>
+</div>
+
+<script>
+    const wordBank = {
+        cat1: ["아이스크림", "케이크", "옥수수", "햄버거", "피자", "삼양라면","샤브샤브", "붕어빵", "수박", "치킨"],
+        cat2: ["루미큐브", "배틀그라운드", "좀비고등학교", "라이더", "Geometry Dash", "블록블라스트", "주차의 달인", "거지키우기", "피아노타일", "쿠키런"],
+        cat3: ["요가자세", "양치질하기", "하품하기", "싸우기", "청소하기", "번지점프", "등산하기", "청소기 돌리기", "면접 보기","라면 먹기"],
+        cat4: ["펜싱", "컬링", "야구", "스키", "테니스", "서핑", "태권도", "역도", "배드민턴", "하키"],
+        cat5: ["사자", "원숭이", "닭", "고릴라", "캥거루", "낙타", "악어", "뱀","기린", "코끼리"],
+        cat6: ["의사", "소방관", "군인", "발레리나", "화가", "축구선수","경찰","개발자","기자","파일럿"],
+        cat7: ["방탄소년단", "블랙핑크", "엔하이픈", "아이들", "세븐틴", "스트레이키즈","빅뱅","트와이스","엑소","르세라핌"],
+        cat8: ["인스타그램", "무신사", "쿠팡", "유튜브", "비리얼 BeReal", "멜론","에브리타임","스레드 Threads","요기요","테무"],
+        cat9: ["당황", "감동", "설렘", "분노", "공포", "슬픔","민망","긴장","억울함","피곤"],
+        cat10: ["캠핑장", "감옥", "새내기배움터", "카페", "헬스장", "영화관","스키장","등산로","미용실","바다"]
+
+    };
+
+    let currentList = []; // 섞인 단어들이 담길 배열
+    let currentIndex = 0; // 현재 몇 번째 단어를 보여주는지
+
+    // 배열을 무작위로 섞는 함수 (Fisher-Yates Shuffle)
+    function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    // 카테고리를 바꾸면 상태 리셋
+    function resetGame() {
+        currentList = [];
+        currentIndex = 0;
+        document.getElementById('word').innerText = "준비!";
+        document.getElementById('status-text').innerText = "카테고리가 변경되었습니다.";
+    }
+
+    function nextWord() {
+        const cat = document.getElementById('category-select').value;
+        
+        // 1. 처음 시작하거나 단어를 다 썼을 때 새로 섞기
+        if (currentList.length === 0 || currentIndex >= currentList.length) {
+            currentList = shuffle([...wordBank[cat]]); // 원본 복사해서 섞기
+            currentIndex = 0;
+            if (currentList.length === 0) return;
+        }
+
+        // 2. 현재 순서의 단어 가져오기
+        const selectedWord = currentList[currentIndex];
+        currentIndex++;
+
+        // 3. 화면 표시 및 애니메이션
+        const wordElement = document.getElementById('word');
+        const statusElement = document.getElementById('status-text');
+        
+        wordElement.innerText = selectedWord;
+        statusElement.innerText = `${currentIndex} / ${currentList.length} 번째 단어`;
+
+        wordElement.style.transform = "scale(0.5)";
+        wordElement.style.opacity = "0";
+        setTimeout(() => {
+            wordElement.style.transform = "scale(1)";
+            wordElement.style.opacity = "1";
+        }, 50);
+    }
+</script>
+
+</body>
+</html>
